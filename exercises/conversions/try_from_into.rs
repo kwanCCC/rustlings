@@ -3,6 +3,7 @@
 // instead of the target type itself.
 // You can read more about it at https://doc.rust-lang.org/std/convert/trait.TryFrom.html
 use std::convert::{TryFrom, TryInto};
+use std::ops::Range;
 
 #[derive(Debug, PartialEq)]
 struct Color {
@@ -10,8 +11,6 @@ struct Color {
     green: u8,
     blue: u8,
 }
-
-// I AM NOT DONE
 
 // Your task is to complete this implementation
 // and return an Ok result of inner type Color.
@@ -22,22 +21,43 @@ struct Color {
 // but the slice implementation needs to check the slice length!
 // Also note that correct RGB color values must be integers in the 0..=255 range.
 
-// Tuple implementation
+const COLOR_RANGE: Range<i16> = Range { start: 0i16, end: 256i16 };
+
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = String;
-    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {}
+    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let (red, green, blue) = tuple;
+        if !COLOR_RANGE.contains(&red) || !COLOR_RANGE.contains(&green) || !COLOR_RANGE.contains(&blue) {
+            Err("out of color range".to_string())
+        } else {
+            Ok(Color {
+                red: red as u8,
+                green: green as u8,
+                blue: blue as u8,
+            })
+        }
+    }
 }
 
 // Array implementation
 impl TryFrom<[i16; 3]> for Color {
     type Error = String;
-    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {}
+    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let tuple = (arr[0], arr[1], arr[2]);
+        tuple.try_into()
+    }
 }
 
 // Slice implementation
 impl TryFrom<&[i16]> for Color {
     type Error = String;
-    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {}
+    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        if slice.len() != 3 {
+            return Err("slice len < 3".to_string());
+        }
+        let tuple = (slice[0], slice[1], slice[2]);
+        tuple.try_into()
+    }
 }
 
 fn main() {
